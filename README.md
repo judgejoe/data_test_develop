@@ -1,45 +1,45 @@
-# Assignment
-Write a script to download and parse the given XML feed, manipulate some of the data, and deliver a CSV of the
-required fields. You may use any additional libraries that you wish, please include a requirements.txt if you 
-do.
+# booj_test
 
-### CSV Requirements:
-- Contains only properties listed from 2016 [DateListed]
-- Contains only properties that contain the word "and" in the Description field
-- CSV ordered by DateListed
-- Required fields:
-	- MlsId
-	- MlsName
-	- DateListed
-	- StreetAddress
-	- Price
-	- Bedrooms
-	- Bathrooms
-	- Appliances (all sub-nodes comma joined)
-	- Rooms (all sub-nodes comma joined)
-	- Description (the first 200 characters)
+Hi! Thanks for taking the time to read the README! 
 
-### Technical Requirements
-- Interpreter version: python 2.7
-- Reasonable unit test coverage
-- All libraries used must be documented in requirements.txt
-	- We will be using `pip install -r requirements.txt` prior to running your code
-- Raw information to parse / feed url
-	- http://syndication.enterprise.websiteidx.com/feeds/BoojCodeTest.xml
-	- This feed must be downloaded from with in the script, raw data must not be downloaded manually
+## Approach
+This section explains some of the design and implementation decisions made during the assignment. My solution uses lxml for XML parsing. Given the relatively small size of the data set, Pandas for data manipulation and loading. Pandas was also chosen for performance. There are several places where high performance Pandas functions were used instead of costly iteration. There are 3 main functions in the solution: `extract_xml:_xml()`, `transform()`, and `load_csv()`. `extract_xml()` is flexible enough to extract from any XML document using it's column configuration (see code for full explanation). `transform()` handles the manipulation of data needed for the zillow data set. It is very specific to the data set in the assignemt, but that's expected since transformations will for the most part be specific to a dataset. `load_csv()` outputs a CSV file. It is flexible taking as parameters a DataFrame, filename and list of columns.
 
-### Submission Requirements
-- Work should be tracked with Git
-- Submit final product by submitting a pull request
+## Extensibilty/Reusability
+Object-oriented design principles were not used during the assignment due mainly to time constraints and the fact that without further info on the other types of data sources and formats it is difficult to identify and factor out common functionality. With more time and information on other data sources and formats, an object-oriented design would be a better choice. For example an ETL class could be defined, then the Builder design pattern could be used for the extract, transform and load steps. Interfaces for extract, transform, and load builder classes could be defined, then collections of ETL class instances each with their datatype-specific extract, transform, and load classes could be created. A single load object could be reused across multiple data types as long as a common format for post-transformed data was established. That said, the approach I took is fairly flexible in that it supports extraction from any well formed XML file consisting of a collection of listings, and it is flexible in the load stage as arbitrary data and column headers are supported for writing.
+ 
+## Number of bathrooms
+The data set does not contain any information in the BasicDetails/Bathrooms field, however many BasicDetails/FullBathrooms, BasicDetails/HalfBathrooms, BasicDetails/ThreeQuarterBathrooms fields DO contain information. Therefor the Bathrooms field in the output CSV simple counts the number of FullBathrooms, HalfBathrooms, ThreeQuarterBathrooms if Bathrooms is not provided. Note that fractional bathrooms are counted as 1 bathroom (i.e. 2 half baths equals 2 bathrooms not one). This is to avoid ambiguity (i.e. is 1 bathroom a single full bathroom or 2 half baths?). 
+Note if no there is no information at all on any bathrooms, a null (nan, None) value is used instead of zero. This is to disambiguate it from "0 bathrooms" (which is unlikely to ever happen, but just in case it does)
 
-# Purpose
-A lot of the work in our department is parsing and manipulating data from a variety of sources. The given example
-is one of our XML files that we send to Zillow for property syndication. 
-Our goal in this test is to see how you will approach the processing of this feed. Your solution should take into
-the account that there will be other XML feeds that need parsing as well, so how modular/reusable you make the code
-is very important. 
+## Unit Tests
+Unit tests were written to exercise the extract, transform and load functions and their helper functions. Tests were built using Python's unittest framework. There are 3 separate files, one each for extract, transform, and load functions. Tests were written to cover the main functions of the assignment but coverage is not 100% complete. With more time tests would be written covering handling of error cases such as mixing types in a given field, load failures, File Not Found errors and the like. 
 
-# Time Considerations
-This assignment is expect to take a few hours. We ask that you do not spend too much time on this solution. If you
-are stuck or have questions, feel free to reach out and we will answer quickly. 
+## Execution
+`etl.py` was successfully run on an AWS t2.micro instance using the Ubuntu image and Python 2.7.12.
 
+    $ python --version
+    Python 2.7.12
+    ubuntu@ip-10-0-0-6:~/booj_test$ python etl.py
+    ubuntu@ip-10-0-0-6:~/booj_test$ ls -lt zillow.csv 
+    -rw-rw-r-- 1 ubuntu ubuntu 68992 Feb 18 00:29 zillow.csv
+    ubuntu@ip-10-0-0-6:~/booj_test$ cd tests 
+    ubuntu@ip-10-0-0-6:~/booj_test$ python extract_unittests.py 
+    .......
+    ----------------------------------------------------------------------
+    Ran 7 tests in 0.006s
+    
+    OK
+    ubuntu@ip-10-0-0-6:~/booj_test$ python transform_unittests.py 
+    ....
+    ----------------------------------------------------------------------
+    Ran 4 tests in 0.024s
+    
+    OK
+    ubuntu@ip-10-0-0-6:~/booj_test$ python load_unittests.py 
+    .test.csv
+    ..
+    ----------------------------------------------------------------------
+    Ran 3 tests in 0.023s
+    
+    OK
