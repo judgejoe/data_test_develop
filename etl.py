@@ -2,6 +2,7 @@ import lxml
 from lxml import etree
 import pandas as pd
 import numpy as np
+import sys
 
 def get_rows(listings, cols):
     """
@@ -158,8 +159,9 @@ def load_csv(df, filename, cols):
 
 
 if __name__ == "__main__":
-    xml_filename = 'http://syndication.enterprise.websiteidx.com/feeds/BoojCodeTest.xml' 
-    csv_filename = 'zillow.csv'
+
+    xml_filename = 'http://syndication.enterprise.websiteidx.com/feeds/BoojCodeTest.xml' if sys.argv[1] is None else sys.argv[1]
+    csv_filename = 'zillow.csv' if sys.argv[2] is None else sys.argv[2]
     output_columns = [  'MlsId', 
                         'MlsName',
                         'DateListed',
