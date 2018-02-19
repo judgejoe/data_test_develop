@@ -159,9 +159,8 @@ def load_csv(df, filename, cols):
 
 
 if __name__ == "__main__":
-
-    xml_filename = 'http://syndication.enterprise.websiteidx.com/feeds/BoojCodeTest.xml' if sys.argv[1] is None else sys.argv[1]
-    csv_filename = 'zillow.csv' if sys.argv[2] is None else sys.argv[2]
+    xml_filename = 'http://syndication.enterprise.websiteidx.com/feeds/BoojCodeTest.xml' if len(sys.argv) <2 else sys.argv[1]
+    csv_filename = 'zillow.csv' if len(sys.argv) < 3 else sys.argv[2]
     output_columns = [  'MlsId', 
                         'MlsName',
                         'DateListed',
